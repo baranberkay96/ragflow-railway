@@ -1,0 +1,538 @@
+{
+  "name": "RAGFlow v0.27 Document AI Engine",
+  "description": "Chat with PDFs, contracts and docs. Deep-document RAG with Elasticsearch.",
+  "category": "AI/ML",
+  "tags": [
+    "ragflow",
+    "rag",
+    "document-ai",
+    "pdf",
+    "elasticsearch",
+    "llm",
+    "knowledge-base"
+  ],
+  "upstream": {
+    "repo": "infiniflow/ragflow",
+    "version": "v0.27.2",
+    "checked": "2026-10-10"
+  },
+  "services": {
+    "ragflow": {
+      "icon": "https://raw.githubusercontent.com/infiniflow/ragflow/main/web/public/logo.svg",
+      "source": {
+        "repo": "baranberkay96/ragflow-railway",
+        "rootDirectory": "/services/ragflow"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/api/v1/system/healthz",
+      "healthcheckTimeout": 900,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 80,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "RAGFLOW_ROLE": {
+          "defaultValue": "web",
+          "description": "Runs nginx/UI, API server, admin server and data-source sync (no parsing workers).",
+          "required": false
+        },
+        "PORT": {
+          "defaultValue": "80",
+          "description": "nginx port serving the UI and proxying the API (public domain target).",
+          "required": false
+        },
+        "DOC_ENGINE": {
+          "defaultValue": "elasticsearch",
+          "description": "Document/vector engine (upstream default).",
+          "required": false
+        },
+        "DEVICE": {
+          "defaultValue": "cpu",
+          "description": "CPU image; Railway has no GPUs.",
+          "required": false
+        },
+        "API_PROXY_SCHEME": {
+          "defaultValue": "python",
+          "description": "Use the Python API server behind the bundled nginx (upstream default).",
+          "required": false
+        },
+        "TZ": {
+          "defaultValue": "UTC",
+          "description": "Container timezone (upstream .env uses Asia/Shanghai).",
+          "required": false
+        },
+        "HF_ENDPOINT": {
+          "defaultValue": "https://huggingface.co",
+          "description": "Model download endpoint. The image defaults to a China mirror (hf-mirror.com).",
+          "required": false
+        },
+        "ES_HOST": {
+          "defaultValue": "${{Elasticsearch.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Elasticsearch host (private network, port 9200).",
+          "required": false
+        },
+        "ES_USER": {
+          "defaultValue": "elastic",
+          "description": "Elasticsearch user.",
+          "required": false
+        },
+        "ELASTIC_PASSWORD": {
+          "defaultValue": "${{Elasticsearch.ELASTIC_PASSWORD}}",
+          "description": "Elasticsearch password (reference).",
+          "required": false
+        },
+        "MYSQL_HOST": {
+          "defaultValue": "${{MySQL.MYSQLHOST}}",
+          "description": "MySQL host (private network).",
+          "required": false
+        },
+        "MYSQL_PORT": {
+          "defaultValue": "${{MySQL.MYSQLPORT}}",
+          "description": "MySQL port.",
+          "required": false
+        },
+        "MYSQL_USER": {
+          "defaultValue": "${{MySQL.MYSQLUSER}}",
+          "description": "MySQL user (root, as upstream).",
+          "required": false
+        },
+        "MYSQL_PASSWORD": {
+          "defaultValue": "${{MySQL.MYSQL_ROOT_PASSWORD}}",
+          "description": "MySQL password (reference).",
+          "required": false
+        },
+        "MYSQL_DBNAME": {
+          "defaultValue": "${{MySQL.MYSQL_DATABASE}}",
+          "description": "Database for RAGFlow metadata (created by the MySQL image).",
+          "required": false
+        },
+        "REDIS_HOST": {
+          "defaultValue": "${{Redis.REDISHOST}}",
+          "description": "Redis host (task queue, locks, caches).",
+          "required": false
+        },
+        "REDIS_PORT": {
+          "defaultValue": "${{Redis.REDISPORT}}",
+          "description": "Redis port.",
+          "required": false
+        },
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{Redis.REDIS_PASSWORD}}",
+          "description": "Redis password.",
+          "required": false
+        },
+        "STORAGE_IMPL": {
+          "defaultValue": "AWS_S3",
+          "description": "Store uploaded files and parsed images in S3 (Railway Bucket) instead of MinIO.",
+          "required": false
+        },
+        "S3_ENDPOINT_URL": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "Railway Bucket S3 endpoint.",
+          "required": false
+        },
+        "S3_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Railway Bucket region.",
+          "required": false
+        },
+        "S3_BUCKET": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Railway Bucket name (single-bucket mode).",
+          "required": false
+        },
+        "S3_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key.",
+          "required": false
+        },
+        "S3_SECRET_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret key.",
+          "required": false
+        },
+        "S3_PREFIX_PATH": {
+          "defaultValue": "ragflow",
+          "description": "Key prefix; files are stored as <prefix>/<dataset-id>/<file> so per-dataset deletes stay scoped.",
+          "required": false
+        },
+        "S3_ADDRESSING_STYLE": {
+          "defaultValue": "virtual",
+          "description": "Railway Buckets require virtual-hosted-style requests.",
+          "required": false
+        },
+        "RAGFLOW_SECRET_KEY": {
+          "defaultValue": "${{secret(64, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Signs sessions and tokens. Generated once; shared with ragflow-worker.",
+          "required": false
+        },
+        "REGISTER_ENABLED": {
+          "defaultValue": "1",
+          "description": "Allow sign-up so you can create the first account. Set to 0 after your team has registered.",
+          "required": false
+        },
+        "ADMIN_DEFAULT_PASSWORD": {
+          "defaultValue": "${{secret(24, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Password of the built-in superuser admin@ragflow.io (admin server). Generated instead of upstream's 'admin'.",
+          "required": false
+        }
+      }
+    },
+    "ragflow-worker": {
+      "icon": "https://raw.githubusercontent.com/infiniflow/ragflow/main/web/public/logo.svg",
+      "source": {
+        "repo": "baranberkay96/ragflow-railway",
+        "rootDirectory": "/services/ragflow"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "RAGFLOW_ROLE": {
+          "defaultValue": "worker",
+          "description": "Runs only document-parsing task executors.",
+          "required": false
+        },
+        "RAGFLOW_TASK_EXECUTORS": {
+          "defaultValue": "1",
+          "description": "Task executor processes in this container (~1.5-3 GB RAM each while parsing). Scale with this or with replicas.",
+          "required": false
+        },
+        "DOC_ENGINE": {
+          "defaultValue": "elasticsearch",
+          "description": "Document/vector engine (upstream default).",
+          "required": false
+        },
+        "DEVICE": {
+          "defaultValue": "cpu",
+          "description": "CPU image; Railway has no GPUs.",
+          "required": false
+        },
+        "API_PROXY_SCHEME": {
+          "defaultValue": "python",
+          "description": "Use the Python API server behind the bundled nginx (upstream default).",
+          "required": false
+        },
+        "TZ": {
+          "defaultValue": "UTC",
+          "description": "Container timezone (upstream .env uses Asia/Shanghai).",
+          "required": false
+        },
+        "HF_ENDPOINT": {
+          "defaultValue": "https://huggingface.co",
+          "description": "Model download endpoint. The image defaults to a China mirror (hf-mirror.com).",
+          "required": false
+        },
+        "ES_HOST": {
+          "defaultValue": "${{Elasticsearch.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Elasticsearch host (private network, port 9200).",
+          "required": false
+        },
+        "ES_USER": {
+          "defaultValue": "elastic",
+          "description": "Elasticsearch user.",
+          "required": false
+        },
+        "ELASTIC_PASSWORD": {
+          "defaultValue": "${{Elasticsearch.ELASTIC_PASSWORD}}",
+          "description": "Elasticsearch password (reference).",
+          "required": false
+        },
+        "MYSQL_HOST": {
+          "defaultValue": "${{MySQL.MYSQLHOST}}",
+          "description": "MySQL host (private network).",
+          "required": false
+        },
+        "MYSQL_PORT": {
+          "defaultValue": "${{MySQL.MYSQLPORT}}",
+          "description": "MySQL port.",
+          "required": false
+        },
+        "MYSQL_USER": {
+          "defaultValue": "${{MySQL.MYSQLUSER}}",
+          "description": "MySQL user (root, as upstream).",
+          "required": false
+        },
+        "MYSQL_PASSWORD": {
+          "defaultValue": "${{MySQL.MYSQL_ROOT_PASSWORD}}",
+          "description": "MySQL password (reference).",
+          "required": false
+        },
+        "MYSQL_DBNAME": {
+          "defaultValue": "${{MySQL.MYSQL_DATABASE}}",
+          "description": "Database for RAGFlow metadata (created by the MySQL image).",
+          "required": false
+        },
+        "REDIS_HOST": {
+          "defaultValue": "${{Redis.REDISHOST}}",
+          "description": "Redis host (task queue, locks, caches).",
+          "required": false
+        },
+        "REDIS_PORT": {
+          "defaultValue": "${{Redis.REDISPORT}}",
+          "description": "Redis port.",
+          "required": false
+        },
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{Redis.REDIS_PASSWORD}}",
+          "description": "Redis password.",
+          "required": false
+        },
+        "STORAGE_IMPL": {
+          "defaultValue": "AWS_S3",
+          "description": "Store uploaded files and parsed images in S3 (Railway Bucket) instead of MinIO.",
+          "required": false
+        },
+        "S3_ENDPOINT_URL": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "Railway Bucket S3 endpoint.",
+          "required": false
+        },
+        "S3_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Railway Bucket region.",
+          "required": false
+        },
+        "S3_BUCKET": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Railway Bucket name (single-bucket mode).",
+          "required": false
+        },
+        "S3_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key.",
+          "required": false
+        },
+        "S3_SECRET_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret key.",
+          "required": false
+        },
+        "S3_PREFIX_PATH": {
+          "defaultValue": "ragflow",
+          "description": "Key prefix; files are stored as <prefix>/<dataset-id>/<file> so per-dataset deletes stay scoped.",
+          "required": false
+        },
+        "S3_ADDRESSING_STYLE": {
+          "defaultValue": "virtual",
+          "description": "Railway Buckets require virtual-hosted-style requests.",
+          "required": false
+        },
+        "RAGFLOW_SECRET_KEY": {
+          "defaultValue": "${{ragflow.RAGFLOW_SECRET_KEY}}",
+          "description": "Must match the ragflow service.",
+          "required": false
+        }
+      }
+    },
+    "Elasticsearch": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/elasticsearch.svg",
+      "source": {
+        "repo": "baranberkay96/ragflow-railway",
+        "rootDirectory": "/services/elasticsearch"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/usr/share/elasticsearch/data"
+      },
+      "variables": {
+        "discovery.type": {
+          "defaultValue": "single-node",
+          "description": "Single-node cluster (also skips production bootstrap checks).",
+          "required": false
+        },
+        "xpack.security.enabled": {
+          "defaultValue": "true",
+          "description": "Require the elastic user's password (as upstream).",
+          "required": false
+        },
+        "xpack.security.http.ssl.enabled": {
+          "defaultValue": "false",
+          "description": "Plain HTTP inside the private network (as upstream).",
+          "required": false
+        },
+        "xpack.security.transport.ssl.enabled": {
+          "defaultValue": "false",
+          "description": "No transport TLS for a single node (as upstream).",
+          "required": false
+        },
+        "ELASTIC_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Password of the elastic user, generated.",
+          "required": false
+        },
+        "ES_JAVA_OPTS": {
+          "defaultValue": "-Xms2g -Xmx2g",
+          "description": "JVM heap. Keep about half of the RAM you want ES to use; without it ES sizes the heap from the host.",
+          "required": false
+        },
+        "network.host": {
+          "defaultValue": "::",
+          "description": "Listen on IPv6 and IPv4 so private-network clients can connect in any Railway environment.",
+          "required": false
+        },
+        "node.store.allow_mmap": {
+          "defaultValue": "false",
+          "description": "Do not depend on the host's vm.max_map_count, which containers cannot change.",
+          "required": false
+        },
+        "bootstrap.memory_lock": {
+          "defaultValue": "false",
+          "description": "memlock ulimits cannot be raised on Railway.",
+          "required": false
+        },
+        "ingest.geoip.downloader.enabled": {
+          "defaultValue": "false",
+          "description": "Skip GeoIP database downloads (unused by RAGFlow).",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow a clean shutdown on redeploy.",
+          "required": false
+        }
+      }
+    },
+    "MySQL": {
+      "icon": "https://devicons.railway.app/i/mysql.svg",
+      "source": {
+        "image": "mysql:9"
+      },
+      "startCommand": "docker-entrypoint.sh mysqld --innodb-use-native-aio=0 --disable-log-bin --performance_schema=0 --innodb-buffer-pool-size=1G --max-connections=1000 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/mysql"
+      },
+      "variables": {
+        "MYSQLHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway Private Domain Name.",
+          "required": false
+        },
+        "MYSQLPORT": {
+          "defaultValue": "3306",
+          "description": "MySQL port.",
+          "required": false
+        },
+        "MYSQLUSER": {
+          "defaultValue": "root",
+          "description": "MySQL user, used for the Data panel.",
+          "required": false
+        },
+        "MYSQL_URL": {
+          "defaultValue": "mysql://${{ MYSQLUSER }}:${{ MYSQL_ROOT_PASSWORD }}@${{ RAILWAY_PRIVATE_DOMAIN }}:3306/${{ MYSQL_DATABASE }}",
+          "description": "URL to connect to MySQL.",
+          "required": false
+        },
+        "MYSQLDATABASE": {
+          "defaultValue": "${{ MYSQL_DATABASE }}",
+          "description": "Default database, used for Data panel.",
+          "required": false
+        },
+        "MYSQLPASSWORD": {
+          "defaultValue": "${{ MYSQL_ROOT_PASSWORD }}",
+          "description": "Root password, used for Data panel.",
+          "required": false
+        },
+        "MYSQL_DATABASE": {
+          "defaultValue": "railway",
+          "description": "Database to be created on image startup.",
+          "required": false
+        },
+        "MYSQL_ROOT_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Root password for MySQL DB.",
+          "required": false
+        }
+      }
+    },
+    "Redis": {
+      "icon": "https://cdn.sanity.io/images/sy1jschh/production/0ce0bfdcfbdbf69662b1116671f97c2dd788b655-157x157.svg",
+      "source": {
+        "image": "redis:8.2"
+      },
+      "startCommand": "/bin/sh -c \"rm -rf $RAILWAY_VOLUME_MOUNT_PATH/lost+found/ && exec docker-entrypoint.sh redis-server --requirepass $REDIS_PASSWORD --save 60 1 --dir $RAILWAY_VOLUME_MOUNT_PATH\"",
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/data"
+      },
+      "variables": {
+        "REDISHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private network hostname of the Redis service, only resolvable from services in the same environment",
+          "required": false
+        },
+        "REDISPORT": {
+          "defaultValue": "6379",
+          "description": "Port that Redis listens on",
+          "required": false
+        },
+        "REDISUSER": {
+          "defaultValue": "default",
+          "description": "Username for authenticating with Redis",
+          "required": false
+        },
+        "REDIS_URL": {
+          "defaultValue": "redis://${{ REDISUSER }}:${{ REDIS_PASSWORD }}@${{ REDISHOST }}:${{ REDISPORT }}",
+          "description": "Connection string for connecting to Redis using the private network",
+          "required": false
+        },
+        "REDISPASSWORD": {
+          "defaultValue": "${{REDIS_PASSWORD}}",
+          "description": "Alias of REDIS_PASSWORD for clients that expect the unseparated name",
+          "required": false
+        },
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Randomly generated password for authenticating with Redis",
+          "required": false
+        }
+      }
+    }
+  },
+  "buckets": [
+    "Bucket"
+  ]
+}
