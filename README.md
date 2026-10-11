@@ -1,5 +1,7 @@
 # Deploy and Host RAGFlow with Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/ragflow-v027-document-ai-engine)
+
 RAGFlow is an open-source retrieval-augmented generation engine built around deep document understanding: it parses PDFs, scans, tables and slides into well-structured chunks and answers questions with traceable citations. This community template deploys RAGFlow v0.27 on Railway with Elasticsearch, MySQL, Redis, a Railway Bucket and a separate parsing worker.
 
 ## About Hosting RAGFlow
