@@ -270,3 +270,10 @@ Railway prices: RAM $10/GB-month, vCPU $20/vCPU-month, volume $0.15/GB-month, Bu
 - **Elasticsearch disk watermarks:** ES defaults (85/90/95 %) apply. On a 5 GB Hobby volume indices turn read-only around 4.75 GB used; grow the volume before that.
 - **No local embedding service:** upstream's optional TEI container is not included; configure an embedding provider in the UI. A TEI service can be added later.
 - Not deploy-tested in this package (local files only).
+
+## Deploy test findings (2026-10-11)
+
+Elasticsearch crash-looped on the first Railway test, so RAGFlow could not connect. Two bugs, both fixed and verified locally (cluster green, `elastic` login 200, wrong password 401):
+- `network.host=::` — the image writes `dotted.env` settings to YAML unquoted and `::` breaks the parse ("mapping values are not allowed here"). Now `0.0.0.0` (Java binds dual-stack).
+- The wrapper dropped privileges with `chroot`, which resets the working directory to `/`. Upstream's entrypoint only stores `ELASTIC_PASSWORD` when `bin/elasticsearch-users` exists relative to the cwd, so the password was silently never set and RAGFlow's authenticated connection would have failed. Now `cd $ES_HOME` + `setpriv`.
+

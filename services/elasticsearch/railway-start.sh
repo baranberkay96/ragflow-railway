@@ -10,5 +10,9 @@ rm -rf "$DATA_DIR/lost+found"
 chown -R 1000:0 "$DATA_DIR"
 chmod 1777 /tmp
 
-exec chroot --userspec=1000:0 / env HOME=/usr/share/elasticsearch \
+# The upstream entrypoint calls bin/elasticsearch-keystore by relative path to
+# store ELASTIC_PASSWORD; run it from ES_HOME (chroot would reset cwd to / and
+# the password step would be skipped silently).
+cd /usr/share/elasticsearch
+exec setpriv --reuid=1000 --regid=0 --clear-groups env HOME=/usr/share/elasticsearch \
   /usr/local/bin/docker-entrypoint.sh "$@"

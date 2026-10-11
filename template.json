@@ -391,8 +391,8 @@
           "required": false
         },
         "network.host": {
-          "defaultValue": "::",
-          "description": "Listen on IPv6 and IPv4 so private-network clients can connect in any Railway environment.",
+          "defaultValue": "0.0.0.0",
+          "description": "Bind address. 0.0.0.0, not '::': the image writes these settings to YAML unquoted and '::' breaks the parse. Java binds dual-stack here.",
           "required": false
         },
         "node.store.allow_mmap": {
