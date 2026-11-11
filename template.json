@@ -1,5 +1,6 @@
 {
-  "name": "RAGFlow v0.27 Document AI Engine",
+  "name": "RAGFlow Document AI Engine",
+  "idSeed": "RAGFlow v0.27 Document AI Engine",
   "description": "Chat with PDFs, contracts and docs. Deep-document RAG with Elasticsearch.",
   "category": "AI/ML",
   "tags": [

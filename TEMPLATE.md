@@ -1,4 +1,4 @@
-# RAGFlow v0.27 Document AI Engine — Railway template spec
+# RAGFlow Document AI Engine — Railway template spec
 
 ## Listing
 
